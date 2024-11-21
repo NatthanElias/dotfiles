@@ -1,0 +1,14 @@
+{
+    "window.zoomLevel": 1.2,
+    "workbench.colorTheme": "Monokai",
+    "editor.fontSize": 16,
+    "symbols.hidesExplorerArrows": false,
+    "workbench.iconTheme": "symbols",
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.lineHeight": 1.8,
+    "editor.semanticHighlighting.enabled": false,
+    "explorer.compactFolders": false,
+    "breadcrumbs.enabled": false,
+    "terminal.integrated.fontFamily": "MesloLGS NF",
+    "liveServer.settings.donotShowInfoMsg": true
+}
