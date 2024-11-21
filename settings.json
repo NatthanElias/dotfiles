@@ -1,14 +1,32 @@
 {
-    "window.zoomLevel": 1.2,
+    "window.zoomLevel": 1,
     "workbench.colorTheme": "Monokai",
+    "workbench.preferredDarkColorTheme": "Monokai",
     "editor.fontSize": 16,
     "symbols.hidesExplorerArrows": false,
     "workbench.iconTheme": "symbols",
     "editor.fontFamily": "JetBrains Mono",
     "editor.lineHeight": 1.8,
     "editor.semanticHighlighting.enabled": false,
+    "editor.rulers": [100],
+    "editor.cursorBlinking": "solid",
     "explorer.compactFolders": false,
     "breadcrumbs.enabled": false,
     "terminal.integrated.fontFamily": "MesloLGS NF",
-    "liveServer.settings.donotShowInfoMsg": true
+    "liveServer.settings.donotShowInfoMsg": true,
+    "[markdown]": {
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 100
+    },
+    "files.autoSave": "onFocusChange",
+    "files.hotExit": "onExitAndWindowClose",
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.scrollback": 10000,
+    "terminal.integrated.shell.osx": "/bin/zsh",
+    "terminal.integrated.tabs.enabled": true,
+    "terminal.integrated.smoothScrolling": true,
+    "editor.accessibilitySupport": "off",
+    "files.insertFinalNewline": true,
+
+    "editor.inlineSuggest.enabled": true
 }
