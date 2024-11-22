@@ -1,13 +1,27 @@
 {
     "window.zoomLevel": 1,
-    "workbench.colorTheme": "Monokai",
-    "workbench.preferredDarkColorTheme": "Monokai",
+    "workbench.colorTheme": "Monokai Night",
+    "workbench.preferredDarkColorTheme": "Monokai Night",
     "editor.fontSize": 16,
     "symbols.hidesExplorerArrows": false,
     "workbench.iconTheme": "symbols",
     "editor.fontFamily": "JetBrains Mono",
     "editor.lineHeight": 1.8,
-    "editor.semanticHighlighting.enabled": false,
+    "editor.semanticHighlighting.enabled": true,
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": [
+                    "meta.function-call.generic.python",
+                    "meta.function-call.python"
+                ],
+                "settings": {
+                    "foreground": "#FFC66D" // Cyan color for methods
+                }
+            }
+        ]
+    },
+    "python.languageServer": "Pylance",
     "editor.rulers": [100],
     "editor.cursorBlinking": "solid",
     "explorer.compactFolders": false,
@@ -27,6 +41,5 @@
     "terminal.integrated.smoothScrolling": true,
     "editor.accessibilitySupport": "off",
     "files.insertFinalNewline": true,
-
     "editor.inlineSuggest.enabled": true
 }
