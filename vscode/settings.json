@@ -32,6 +32,9 @@
         "editor.wordWrap": "wordWrapColumn",
         "editor.wordWrapColumn": 100
     },
+    "[python]": {
+        "files.insertFinalNewline": true
+    },
     "files.autoSave": "onFocusChange",
     "files.hotExit": "onExitAndWindowClose",
     "terminal.integrated.fontSize": 14,
@@ -40,6 +43,5 @@
     "terminal.integrated.tabs.enabled": true,
     "terminal.integrated.smoothScrolling": true,
     "editor.accessibilitySupport": "off",
-    "files.insertFinalNewline": true,
     "editor.inlineSuggest.enabled": true
 }
