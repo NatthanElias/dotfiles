@@ -9,7 +9,7 @@
 # 3. Altera atalhos do teclado.
 # 4. Define um papel de parede personalizado.
 # 5. Configura o comportamento da tecla Caps Lock.
-# 6. Configura o Git para salvar credenciais no GNOME Keyring.
+# 6. Configura o Git para salvar credenciais via OAuth (login pelo navegador).
 # =========================================================================
 
 echo "🚀 Iniciando a personalização do ambiente GNOME..."
@@ -53,7 +53,6 @@ WALLPAPER_RELATIVE_PATH="./wallpaper/bota_garrao_gpteco.png"
 # gsettings precisa do caminho completo para funcionar corretamente
 WALLPAPER_ABSOLUTE_PATH=$(readlink -f "$WALLPAPER_RELATIVE_PATH")
 
-# Verifica se o arquivo de imagem realmente existe no caminho absoluto
 if [ -f "$WALLPAPER_ABSOLUTE_PATH" ]; then
     # Adiciona o prefixo 'file://' necessário para o gsettings
     WALLPAPER_URI="file://$WALLPAPER_ABSOLUTE_PATH"
@@ -64,7 +63,7 @@ if [ -f "$WALLPAPER_ABSOLUTE_PATH" ]; then
     gsettings set org.gnome.desktop.background picture-uri-dark "$WALLPAPER_URI"
     
     # Define o modo de ajuste como 'scaled' (manter proporções e preencher)
-    gsettings set org.gnome.desktop.background picture-options 'scaled'
+    gsettings set org.gnome.desktop.background picture-options 'wallpaper'
 
     echo "    ✅ Papel de parede aplicado com sucesso."
 else
@@ -104,11 +103,11 @@ else
 fi
 echo ""
 
-# --- INÍCIO DA NOVA SEÇÃO ---
-echo "-> 6/6: Configurando o Git Credential Helper (para salvar senhas)..."
 
-# Lista de pacotes necessários para esta etapa
-PACKAGES_NEEDED=("git" "libsecret-1-0")
+echo "-> 6/6: Configurando o Git Credential Helper (método OAuth)..."
+
+# Lista de pacotes necessários para o método OAuth
+PACKAGES_NEEDED=("git" "git-credential-oauth")
 PACKAGES_TO_INSTALL=()
 
 # Verifica se cada pacote está instalado
@@ -125,7 +124,6 @@ if [ ${#PACKAGES_TO_INSTALL[@]} -gt 0 ]; then
     echo
     if [[ -z "$REPLY" || $REPLY =~ ^[Ss]$ ]]; then
         echo "    - Instalando dependências..."
-        # É necessário sudo para instalar pacotes
         sudo apt-get update
         sudo apt-get install -y "${PACKAGES_TO_INSTALL[@]}"
         echo "    ✅ Dependências instaladas."
@@ -138,14 +136,11 @@ if [ ${#PACKAGES_TO_INSTALL[@]} -gt 0 ]; then
     fi
 fi
 
-# Configura o Git para usar o libsecret, que se integra com o GNOME Keyring
-# Esta é a forma segura de salvar tokens de acesso no Ubuntu
-echo "    - Configurando o Git para usar o cofre de senhas do sistema (GNOME Keyring)..."
-git config --global credential.helper /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
+echo "    - Configurando o Git para usar o método de autenticação via navegador (OAuth)..."
+git config --global credential.helper oauth
 
 echo "    ✅ Credential Helper do Git configurado com sucesso."
-echo "    ℹ️  Na próxima vez que usar 'git push', uma janela solicitará seu usuário e token, que serão salvos."
+echo "    ℹ️  Na próxima vez que usar 'git push', seu navegador será aberto para autorização no GitHub."
 echo ""
-# --- FIM DA NOVA SEÇÃO ---
 
 echo "🎉 Configuração concluída!"
