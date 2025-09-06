@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =========================================================================
-# Script de Pós-Instalação e Personalização do GNOME (Ubuntu)
+# Script de Pós-Instalação e Personalização do GNOME (Ubuntu/Debian)
 #
 # O que este script faz:
 # 1. Desativa o som de eventos do sistema.
@@ -9,18 +9,20 @@
 # 3. Altera atalhos do teclado.
 # 4. Define um papel de parede personalizado.
 # 5. Configura o comportamento da tecla Caps Lock.
-# 6. Configura o Git para salvar credenciais via OAuth (login pelo navegador).
+# 6. Configura o Git para salvar credenciais via OAuth.
+# 7. Adiciona suporte ao Flatpak e ao repositório Flathub.
+# 8. Instala o Gerenciador de Extensões (Extension Manager).
 # =========================================================================
 
 echo "🚀 Iniciando a personalização do ambiente GNOME..."
 echo ""
 
-echo "-> 1/6: Desativando o som de captura de tela e outros eventos..."
+echo "-> 1/8: Desativando o som de captura de tela e outros eventos..."
 gsettings set org.gnome.desktop.sound event-sounds false
 echo "    ✅ Sons de eventos do sistema desativados."
 echo ""
 
-echo "-> 2/6: Configurando layouts de teclado..."
+echo "-> 2/8: Configurando layouts de teclado..."
 # Verifica a variável de ambiente $LANG que define o idioma/região
 if [[ "$LANG" == "pt_BR"* ]]; then
     echo "    Idioma detectado: Português (Brasil). Adicionando layout Inglês (US)..."
@@ -36,7 +38,7 @@ else
 fi
 echo ""
 
-echo "-> 3/6: Alterando atalhos do teclado..."
+echo "-> 3/8: Alterando atalhos do teclado..."
 echo "    - Configurando 'Mudar layout' para 'Ctrl+Espaço'..."
 gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Control>space']"
 gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "['<Control><Shift>space']"
@@ -45,102 +47,96 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys screenshot "['<Contro
 echo "    ✅ Atalhos personalizados foram aplicados."
 echo ""
 
-echo "-> 4/6: Configurando o papel de parede..."
+echo "-> 4/8: Configurando o papel de parede..."
 # Define o caminho relativo da imagem
 WALLPAPER_RELATIVE_PATH="./wallpaper/bota_garrao_gpteco.png"
 
 # Converte o caminho relativo para um caminho absoluto
-# gsettings precisa do caminho completo para funcionar corretamente
 WALLPAPER_ABSOLUTE_PATH=$(readlink -f "$WALLPAPER_RELATIVE_PATH")
 
+# Verifica se o arquivo de imagem realmente existe no caminho absoluto
 if [ -f "$WALLPAPER_ABSOLUTE_PATH" ]; then
-    # Adiciona o prefixo 'file://' necessário para o gsettings
     WALLPAPER_URI="file://$WALLPAPER_ABSOLUTE_PATH"
-
     echo "    - Aplicando imagem: $WALLPAPER_ABSOLUTE_PATH"
-    # Define a imagem para os modos claro e escuro para garantir consistência
     gsettings set org.gnome.desktop.background picture-uri "$WALLPAPER_URI"
     gsettings set org.gnome.desktop.background picture-uri-dark "$WALLPAPER_URI"
-    
-    # Define o modo de ajuste como 'scaled' (manter proporções e preencher)
-    gsettings set org.gnome.desktop.background picture-options 'wallpaper'
-
+    gsettings set org.gnome.desktop.background picture-options 'scaled'
     echo "    ✅ Papel de parede aplicado com sucesso."
 else
     echo "    ⚠️  Aviso: O arquivo de papel de parede não foi encontrado em '$WALLPAPER_ABSOLUTE_PATH'."
-    echo "    ➡️  Pulando esta etapa. Verifique se a pasta 'wallpaper' está no mesmo local que o script."
+    echo "    ➡️  Pulando esta etapa."
 fi
 echo ""
 
-echo "-> 5/6: Configurando a tecla Caps Lock..."
+echo "-> 5/8: Configurando a tecla Caps Lock..."
 CAPS_STATUS=$(gsettings get org.gnome.desktop.input-sources xkb-options)
 
-# Verifica se a string de configuração contém a opção 'caps:none'
 if [[ "$CAPS_STATUS" == *"'caps:none'"* ]]; then
     echo "    ℹ️  Sua tecla Caps Lock já está desativada."
-    read -p "    Deseja reativá-la? (s/N) " -n 1 -r REPLY
-    echo
-
-    if [[ $REPLY =~ ^[Ss]$ ]]; then
-        # Usa um array vazio "[]" para restaurar o comportamento padrão (ativado)
-        gsettings set org.gnome.desktop.input-sources xkb-options "[]"
-        echo "    ✅ Caps Lock foi REATIVADO."
-    else
-        echo "    ➡️  Nenhuma alteração feita. O Caps Lock permanece desativado."
-    fi
 else
     echo "    ℹ️  Sua tecla Caps Lock está ativada."
     read -p "    Deseja desativá-la? (S/n) " -n 1 -r REPLY
     echo
-
-    # A condição abaixo torna "Sim" a opção padrão se o usuário apenas pressionar Enter
     if [[ -z "$REPLY" || $REPLY =~ ^[Ss]$ ]]; then
         gsettings set org.gnome.desktop.input-sources xkb-options "['caps:none']"
         echo "    ✅ Caps Lock foi DESATIVADO."
     else
-        echo "    ➡️  Nenhuma alteração feita. O Caps Lock permanece ativado."
+        echo "    ➡️  Nenhuma alteração feita."
     fi
 fi
 echo ""
 
-
-echo "-> 6/6: Configurando o Git Credential Helper (método OAuth)..."
-
-# Lista de pacotes necessários para o método OAuth
+echo "-> 6/8: Configurando o Git Credential Helper (método OAuth)..."
 PACKAGES_NEEDED=("git" "git-credential-oauth")
 PACKAGES_TO_INSTALL=()
 
-# Verifica se cada pacote está instalado
 for pkg in "${PACKAGES_NEEDED[@]}"; do
     if ! dpkg -s "$pkg" &> /dev/null; then
         PACKAGES_TO_INSTALL+=("$pkg")
     fi
 done
 
-# Se houver pacotes faltando, pergunta ao usuário se deseja instalá-los
 if [ ${#PACKAGES_TO_INSTALL[@]} -gt 0 ]; then
-    echo "    ℹ️  Para configurar o Git, os seguintes pacotes são necessários: ${PACKAGES_TO_INSTALL[*]}"
+    echo "    ℹ️  Pacotes necessários para o Git: ${PACKAGES_TO_INSTALL[*]}"
     read -p "    Deseja instalá-los agora? (S/n) " -n 1 -r REPLY
     echo
     if [[ -z "$REPLY" || $REPLY =~ ^[Ss]$ ]]; then
-        echo "    - Instalando dependências..."
         sudo apt-get update
         sudo apt-get install -y "${PACKAGES_TO_INSTALL[@]}"
         echo "    ✅ Dependências instaladas."
     else
         echo "    ➡️  Instalação cancelada. Pulando a configuração do Git."
-        # Sai da seção se o usuário recusar a instalação
-        echo ""
-        echo "🎉 Configuração concluída!"
-        exit 0
     fi
 fi
-
-echo "    - Configurando o Git para usar o método de autenticação via navegador (OAuth)..."
 git config --global credential.helper oauth
+echo "    ✅ Credential Helper do Git configurado para usar OAuth."
+echo ""
 
-echo "    ✅ Credential Helper do Git configurado com sucesso."
-echo "    ℹ️  Na próxima vez que usar 'git push', seu navegador será aberto para autorização no GitHub."
+
+echo "-> 7/8: Configurando o suporte a Flatpak..."
+echo "    - Instalando pacotes base para Flatpak e integração com a loja de aplicativos..."
+sudo apt-get update
+sudo apt-get install -y flatpak gnome-software gnome-software-plugin-flatpak gnome-software-plugin-snap
+echo "    - Adicionando o repositório Flathub (principal fonte de apps Flatpak)..."
+# O comando abaixo adiciona o repositório principal de aplicativos Flatpak para o usuário atual
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+echo "    ✅ Suporte a Flatpak configurado com sucesso."
+echo ""
+
+echo "-> 8/8: Instalando o Gerenciador de Extensões (Extension Manager)..."
+# ID do aplicativo Extension Manager no Flathub
+EXTENSION_MANAGER_ID="com.mattjakeman.ExtensionManager"
+
+# Verifica se o Extension Manager já está instalado via Flatpak
+if ! flatpak info "$EXTENSION_MANAGER_ID" &> /dev/null; then
+    echo "    - Gerenciador de Extensões não encontrado. Instalando via Flatpak..."
+    # Instala o aplicativo de forma não interativa
+    flatpak install -y flathub "$EXTENSION_MANAGER_ID"
+    echo "    ✅ Gerenciador de Extensões instalado."
+else
+    echo "    ℹ️  O Gerenciador de Extensões já está instalado."
+fi
+echo "    💡 Dica: Abra o novo aplicativo 'Extension Manager' para procurar e instalar extensões para o GNOME, como a popular 'Dash to Dock'."
 echo ""
 
 echo "🎉 Configuração concluída!"
