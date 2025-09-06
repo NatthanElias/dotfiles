@@ -112,15 +112,22 @@ git config --global credential.helper oauth
 echo "    ✅ Credential Helper do Git configurado para usar OAuth."
 echo ""
 
-
 echo "-> 7/8: Configurando o suporte a Flatpak..."
-echo "    - Instalando pacotes base para Flatpak e integração com a loja de aplicativos..."
-sudo apt-get update
-sudo apt-get install -y flatpak gnome-software gnome-software-plugin-flatpak gnome-software-plugin-snap
-echo "    - Adicionando o repositório Flathub (principal fonte de apps Flatpak)..."
-# O comando abaixo adiciona o repositório principal de aplicativos Flatpak para o usuário atual
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-echo "    ✅ Suporte a Flatpak configurado com sucesso."
+
+# Verifica se o comando 'flatpak' já existe no sistema
+if ! command -v flatpak &> /dev/null; then
+    echo "   - O Flatpak não foi encontrado. Instalando pacotes base..."
+    sudo apt-get update
+    sudo apt-get install -y flatpak gnome-software gnome-software-plugin-flatpak gnome-software-plugin-snap
+    echo "   - Adicionando o repositório Flathub (principal fonte de apps Flatpak)..."
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    echo "   ✅ Suporte a Flatpak configurado com sucesso."
+else
+    echo "   ℹ️  O Flatpak já está instalado. Verificando o repositório Flathub..."
+    # Garante que o repositório Flathub está adicionado, mesmo que o flatpak já exista
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    echo "   ✅ Suporte a Flatpak verificado."
+fi
 echo ""
 
 echo "-> 8/8: Instalando o Gerenciador de Extensões (Extension Manager)..."
@@ -128,15 +135,32 @@ echo "-> 8/8: Instalando o Gerenciador de Extensões (Extension Manager)..."
 EXTENSION_MANAGER_ID="com.mattjakeman.ExtensionManager"
 
 # Verifica se o Extension Manager já está instalado via Flatpak
-if ! flatpak info "$EXTENSION_MANAGER_ID" &> /dev/null; then
-    echo "    - Gerenciador de Extensões não encontrado. Instalando via Flatpak..."
-    # Instala o aplicativo de forma não interativa
-    flatpak install -y flathub "$EXTENSION_MANAGER_ID"
-    echo "    ✅ Gerenciador de Extensões instalado."
+if flatpak info "$EXTENSION_MANAGER_ID" &> /dev/null; then
+    echo "   ℹ️  O Gerenciador de Extensões já está instalado."
 else
-    echo "    ℹ️  O Gerenciador de Extensões já está instalado."
+    # Se não estiver instalado, pergunta ao usuário se ele deseja instalar
+    echo "   💡 Para instalar e gerenciar extensões do GNOME (como a 'Dash to Dock'),"
+    echo "      o 'Extension Manager' é altamente recomendado."
+    
+    # -p: mostra o prompt | -n 1: lê apenas 1 caractere | -r: impede que barras invertidas sejam interpretadas
+    read -p "   ❓ Deseja instalar o Extension Manager agora? [S/n] " resposta
+    echo "" # Adiciona uma nova linha para melhor formatação
+
+    # Define 'S' (Sim) como padrão se o usuário apenas pressionar Enter
+    resposta=${resposta:-S}
+
+    # Verifica se a resposta foi 's' ou 'S'
+    if [[ "$resposta" =~ ^[Ss]$ ]]; then
+        echo "   - Instalando o Gerenciador de Extensões via Flatpak..."
+        flatpak install -y flathub "$EXTENSION_MANAGER_ID"
+        echo "   ✅ Gerenciador de Extensões instalado com sucesso."
+        echo "   💡 Dica: Abra o novo aplicativo 'Extension Manager' para procurar e instalar extensões."
+    else
+        echo "   ➡️  Instalação do Gerenciador de Extensões pulada pelo usuário."
+    fi
 fi
-echo "    💡 Dica: Abra o novo aplicativo 'Extension Manager' para procurar e instalar extensões para o GNOME, como a popular 'Dash to Dock'."
 echo ""
 
 echo "🎉 Configuração concluída!"
+
+echo "⚠️  ⚠️ Continue a configuracao com Linux Toys: https://github.com/psygreg/linuxtoys ⚠️  ⚠️"
